@@ -1,0 +1,217 @@
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.login-screen {
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.access-info {
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Call Screen Styles */
+.call-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buddy-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+}
+
+.main-interaction {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar-container {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-primary) 0%, transparent 70%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.glow-orb {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 40px 10px var(--accent-primary);
+  filter: blur(8px);
+}
+
+.call-status {
+  font-size: 1rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.controls-footer {
+  border-radius: 32px 32px 0 0;
+  padding: 1.5rem 1rem 2rem 1rem;
+  margin: 0 -1.5rem -1.5rem -1.5rem;
+}
+
+.upper-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.toggle-track {
+  width: 48px;
+  height: 24px;
+  background: var(--glass-white);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+}
+
+.toggle-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s ease;
+}
+
+.main-controls {
+  display: flex;
+  justify-content: center;
+}
+
+.mic-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--accent-primary);
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.mic-btn.active {
+  background: #ff4b4b;
+  box-shadow: 0 0 30px rgba(255, 75, 75, 0.4);
+}
+
+.mic-btn.call-active {
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 30px rgba(255, 75, 75, 0.4); }
+  50% { box-shadow: 0 0 50px rgba(255, 75, 75, 0.7); }
+}
+
+/* Orb states */
+.glow-orb.listening {
+  background: #4ade80;
+  box-shadow: 0 0 50px 15px rgba(74, 222, 128, 0.5);
+  animation: pulse-listen 1.5s infinite;
+}
+
+.glow-orb.thinking {
+  background: #facc15;
+  box-shadow: 0 0 50px 15px rgba(250, 204, 21, 0.4);
+  animation: pulse-think 0.8s infinite;
+}
+
+@keyframes pulse-listen {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes pulse-think {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+}
+
+/* Interim text (what user is saying right now) */
+.interim-text {
+  color: #4ade80;
+  font-style: italic;
+  font-size: 1rem;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.transcript-preview {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.last-message {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.icon-btn {
+  padding: 12px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
