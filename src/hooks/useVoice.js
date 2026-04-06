@@ -125,6 +125,24 @@ export const useVoice = () => {
     isSpeakingRef.current = true;
     setInterimText('');
 
+    // Global language detection using the entire text to prevent mid-paragraph voice swapping
+    const isPortuguese = /[ãõçÃÕÇ]/.test(text) || /\b(com|você|fofoca|morta|vixi|mas|que|sim|não|para|ele)\b/i.test(text);
+    const isSpanish = /[ñ¿¡]/.test(text) || /\b(el|la|los|las|un|una|pero|por|qué|hola|gracias|bien|muy)\b/i.test(text) && !isPortuguese;
+    
+    let detectedLang = 'en-US'; // Default to English
+    if (isPortuguese) detectedLang = 'pt-BR';
+    if (isSpanish) detectedLang = 'es-ES';
+    
+    const premiumPT = ['Francisca Online', 'Antonio Online', 'Google Português do Brasil', 'Luciana (Enhanced)', 'Luciana Premium', 'Luciana', 'Raquel (Enhanced)', 'Raquel'];
+    const premiumES = ['Jorge Online', 'Dalia Online', 'Monica (Enhanced)', 'Monica', 'Paulina (Enhanced)', 'Google Español', 'Google español'];
+    const premiumEN = ['Aria Online', 'Guy Online', 'Google US English', 'Samantha (Enhanced)', 'Samantha', 'Victoria'];
+    
+    let targetList = premiumEN;
+    let fallbackLang = 'en';
+    
+    if (isPortuguese) { targetList = premiumPT; fallbackLang = 'pt'; }
+    if (isSpanish) { targetList = premiumES; fallbackLang = 'es'; }
+
     const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
 
     for (const sentence of sentences) {
@@ -134,30 +152,11 @@ export const useVoice = () => {
       await new Promise((resolve) => {
         const utterance = new SpeechSynthesisUtterance(trimmed);
         
-        // Simple language detection using unique characters and common words
-        const isPortuguese = /[ãõçÃÕÇ]/.test(trimmed) || /\b(com|você|fofoca|morta|vixi|mas|que|sim|não|para|ele)\b/i.test(trimmed);
-        const isSpanish = /[ñ¿¡]/.test(trimmed) || /\b(el|la|los|las|un|una|pero|por|qué|hola|gracias|bien|muy)\b/i.test(trimmed) && !isPortuguese;
-        
-        let detectedLang = 'en-US'; // Default to English
-        if (isPortuguese) detectedLang = 'pt-BR';
-        if (isSpanish) detectedLang = 'es-ES';
-        
         utterance.lang = detectedLang;
         utterance.rate = 0.80; // Slower, professional conversational tone
 
         const voices = window.speechSynthesis.getVoices();
         
-        // Premium neural voices for max fluidity (Edge, Chrome, Safari)
-        const premiumPT = ['Francisca Online', 'Antonio Online', 'Google Português do Brasil', 'Luciana (Enhanced)', 'Luciana Premium', 'Luciana', 'Raquel (Enhanced)', 'Raquel'];
-        const premiumES = ['Jorge Online', 'Dalia Online', 'Monica (Enhanced)', 'Monica', 'Paulina (Enhanced)', 'Google Español', 'Google español'];
-        const premiumEN = ['Aria Online', 'Guy Online', 'Google US English', 'Samantha (Enhanced)', 'Samantha', 'Victoria'];
-        
-        let targetList = premiumEN;
-        let fallbackLang = 'en';
-        
-        if (isPortuguese) { targetList = premiumPT; fallbackLang = 'pt'; }
-        if (isSpanish) { targetList = premiumES; fallbackLang = 'es'; }
-
         let voice = null;
         // 1. Try to find the absolute best neural voices available
         for (const premiumName of targetList) {

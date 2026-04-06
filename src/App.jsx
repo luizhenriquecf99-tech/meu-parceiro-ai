@@ -16,7 +16,7 @@ function App() {
   const { isConversationActive, isListening, transcript, interimText, toggleConversation, speak, resumeListening, isTtsReady } = useVoice();
   
   const [messages, setMessages] = useState([]);
-  const [language, setLanguage] = useState('English');
+  const [language, setLanguage] = useState('Português');
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -84,7 +84,9 @@ function App() {
   };
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'English' ? 'Spanish' : 'English');
+    const langs = ['Português', 'English', 'Spanish'];
+    const currentIndex = langs.indexOf(language);
+    setLanguage(langs[(currentIndex + 1) % langs.length]);
   };
 
   if (authLoading) return <div className="loading-screen"><Loader2 className="animate-spin" /></div>;
@@ -167,12 +169,8 @@ function App() {
                    }
                 }} />
                 
-                <div className="language-selector" onClick={toggleLanguage}>
-                  <span className={language === 'English' ? 'active' : ''}>EN</span>
-                  <div className={`toggle-track ${language === 'Spanish' ? 'right' : ''}`}>
-                    <div className="toggle-thumb"></div>
-                  </div>
-                  <span className={language === 'Spanish' ? 'active' : ''}>ES</span>
+                <div className="language-selector" onClick={toggleLanguage} style={{width: '90px', display: 'flex', justifyContent: 'center', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '5px'}}>
+                  <span className="active" style={{fontWeight: 'bold', fontSize: '0.9rem'}}>{language === 'Português' ? 'PT-BR' : language === 'English' ? 'EN-US' : 'ES'}</span>
                 </div>
               </div>
               
@@ -180,7 +178,7 @@ function App() {
                 <motion.button 
                   whileTap={{ scale: 0.9 }}
                   className={`mic-btn ${isConversationActive ? 'active' : ''}`}
-                  onClick={toggleConversation}
+                  onClick={() => toggleConversation(language === 'English' ? 'en-US' : language === 'Spanish' ? 'es-ES' : 'pt-BR')}
                 >
                   <Phone size={32} />
                 </motion.button>
