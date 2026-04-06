@@ -95,7 +95,12 @@ export const useVoice = () => {
       setInterimText('');
       window.speechSynthesis.cancel();
     } else {
-      // Turn ON
+      // Turn ON -> iOS Safari Hack: Unlock speech engine synchronously on user click
+      const unlockUtterance = new SpeechSynthesisUtterance(" ");
+      unlockUtterance.volume = 0;
+      unlockUtterance.rate = 10;
+      window.speechSynthesis.speak(unlockUtterance);
+      
       langRef.current = finalLang;
       conversationActiveRef.current = true;
       setIsConversationActive(true);
