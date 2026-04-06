@@ -83,7 +83,10 @@ export const useVoice = () => {
   }, []);
 
   // Toggle conversation on/off (Alexa-style)
-  const toggleConversation = useCallback((lang = 'pt-BR') => {
+  const toggleConversation = useCallback((langOrEvent) => {
+    // If called directly via onClick, the first arg is an Event object.
+    const finalLang = typeof langOrEvent === 'string' ? langOrEvent : 'pt-BR';
+    
     if (isConversationActive) {
       // Turn OFF
       conversationActiveRef.current = false;
@@ -93,7 +96,7 @@ export const useVoice = () => {
       window.speechSynthesis.cancel();
     } else {
       // Turn ON
-      langRef.current = lang;
+      langRef.current = finalLang;
       conversationActiveRef.current = true;
       setIsConversationActive(true);
       setTranscript(null);
@@ -125,37 +128,57 @@ export const useVoice = () => {
 
       await new Promise((resolve) => {
         const utterance = new SpeechSynthesisUtterance(trimmed);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.72; // ~15% slower than previous 0.85 for better study pace
+        
+        // Simple language detection: Check for common Portuguese letters/accents
+        const isPortuguese = /[áéíóúãõçÁÉÍÓÚÃÕÇ]/.test(trimmed) || 
+                             /\b(e|o|a|é|você|fofoca|babado|morta|vixi|mas|que)\b/i.test(trimmed);
+        
+        utterance.lang = isPortuguese ? 'pt-BR' : 'en-US';
+        utterance.rate = 0.88; // Faster, more fluid "gossip" speed
 
         const voices = window.speechSynthesis.getVoices();
-        const preferred = voices.find(v =>
-          v.name.includes('Google') && v.lang.startsWith('en')
-        ) || voices.find(v => v.lang.startsWith('en'));
-        if (preferred) utterance.voice = preferred;
+        
+        // Premium neural voices for max fluidity (Edge, Chrome, Safari)
+        const premiumPT = ['Francisca Online', 'Antonio Online', 'Google Português do Brasil', 'Luciana', 'Raquel'];
+        const premiumEN = ['Aria Online', 'Guy Online', 'Google US English', 'Samantha', 'Victoria'];
+        
+        let targetList = isPortuguese ? premiumPT : premiumEN;
+        let fallbackLang = isPortuguese ? 'pt' : 'en';
+
+        let voice = null;
+        // 1. Try to find the absolute best neural voices available
+        for (const premiumName of targetList) {
+          voice = voices.find(v => v.name.includes(premiumName));
+          if (voice) break;
+        }
+        
+        // 2. Fallback to any online/enhanced voice in that language
+        if (!voice) {
+          voice = voices.find(v => v.lang.startsWith(fallbackLang) && (v.name.includes('Online') || v.name.includes('Google'))) ||
+                  voices.find(v => v.lang.startsWith(fallbackLang));
+        }
+
+        if (voice) utterance.voice = voice;
 
         let isResolved = false;
         const doResolve = () => {
           if (!isResolved) {
              isResolved = true;
-             resolve();
+             setTimeout(resolve, 150); // Natural pause between sentences
           }
         };
 
-        // 1. Keep reference to prevent GC
+        utterance.onend = doResolve;
+        utterance.onerror = doResolve;
+
+        // 1. Keep reference to prevent Garbage Collection
         window._spokenUtterances = window._spokenUtterances || [];
         window._spokenUtterances.push(utterance);
         
-        // 2. Max timeout (min 2s, 150ms/char)
-        const timeoutMs = Math.max(2000, trimmed.length * 150);
+        // 2. Safety timeout
+        const timeoutMs = Math.max(3000, trimmed.length * 150);
         setTimeout(doResolve, timeoutMs);
 
-        utterance.onend = doResolve;
-        utterance.onerror = (e) => {
-          console.error("Speech error", e);
-          doResolve();
-        };
-        
         // Fix for silent speech engine freeze in Chrome/Edge
         window.speechSynthesis.resume();
         window.speechSynthesis.speak(utterance);
