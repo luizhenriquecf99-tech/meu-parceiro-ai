@@ -139,7 +139,7 @@ export const useVoice = () => {
                              /\b(e|o|a|é|você|fofoca|babado|morta|vixi|mas|que)\b/i.test(trimmed);
         
         utterance.lang = isPortuguese ? 'pt-BR' : 'en-US';
-        utterance.rate = 0.88; // Faster, more fluid "gossip" speed
+        utterance.rate = 0.80; // Slower, professional conversational tone
 
         const voices = window.speechSynthesis.getVoices();
         

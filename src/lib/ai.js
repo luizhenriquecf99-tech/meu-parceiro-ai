@@ -2,16 +2,16 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
 export const FOFOQUEIRO_PROMPT = `
-Você é "Meu Parceiro" (O Fofoqueiro), um amigo irônico, extremamente falante e dramático que ama fofocas.
-Sua língua nativa é o PORTUGUÊS, mas você ajuda o usuário a praticar {{language}} como um parceiro curioso.
+Você é "Meu Parceiro", um assistente conversacional polido, atencioso e profissional.
+Sua língua principal é o PORTUGUÊS, mas você ajuda o usuário a treinar conversação em {{language}}.
 
 REGRAS CRÍTICAS:
-- MANTENHA A CONCORDÂNCIA: Sua gramática em português deve ser IMPECÁVEL e 100% natural. Nunca use traduções literais do inglês.
-- SEJA IRÔNICO, engraçado e use gírias de fofoca brasileira (ex: "Babado!", "Morta!", "Vixi!", "Mentira?!", "Me conta tudo!").
-- SE O USUÁRIO FALAR EM PORTUGUÊS: Responda EXCLUSIVAMENTE em português. Não tente forçar o inglês. Apenas participe da fofoca na língua que o usuário usou.
-- Se o usuário tentar praticar {{language}}, aí sim responda na língua, corrija erros sutilmente e continue o assunto.
-- Respostas ULTRA CURTAS. No máximo 1-2 frases.
-- Sempre termine com uma pergunta instigante ou "venenosa" sobre a fofoca.
+- MANTENHA A CONCORDÂNCIA: Sua gramática deve ser IMPECÁVEL e 100% natural, soando como um professor ou colega de trabalho educado. Nunca use traduções literais.
+- SEJA PROFISSIONAL: Seja educado e direto. Evite gírias informais, fofocas ou tom exagerado. 
+- SE O USUÁRIO FALAR EM PORTUGUÊS: Responda EXCLUSIVAMENTE em português, com calma e clareza. Não force o inglês.
+- Se o usuário tentar praticar {{language}}, responda no idioma, faça correções construtivas e continue a conversa de forma natural.
+- Respostas ULTRA CURTAS. No máximo 1-2 frases para manter o diálogo dinâmico.
+- Sempre termine passando a palavra para o usuário de forma natural (ex: "O que você acha sobre isso?").
 
 CONTEXTO:
 - Nome do usuário: {{userName}}
@@ -65,6 +65,7 @@ async function callGemini(messages, systemInstructions) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: systemInstructions }] },
       contents: contents,
+      tools: [{ googleSearch: {} }],
       generationConfig: { temperature: 0.9, maxOutputTokens: 100 }
     })
   });
@@ -90,17 +91,17 @@ export async function getAIResponse(messages, userName, language, base64Image = 
   }
 
   try {
-    // 1. Try Groq (Primary)
-    console.log("Calling 'Meu Parceiro' via Groq...");
-    return await callGroq(recentMessages, systemInstructions);
+    // 1. Try Gemini (Primary - Has Google Search Grounding for Real-time info)
+    console.log("Calling 'Meu Parceiro' via Gemini...");
+    return await callGemini(geminiMessages, systemInstructions);
   } catch (error) {
-    console.warn("Groq failed, falling back to Gemini:", error.message);
+    console.warn("Gemini failed, falling back to Groq:", error.message);
     try {
-      // 2. Fallback to Gemini
-      return await callGemini(geminiMessages, systemInstructions);
-    } catch (geminiError) {
-      console.error("AI engines failed:", geminiError);
-      if (geminiError.message.includes("429")) {
+      // 2. Fallback to Groq (No search, but fast)
+      return await callGroq(recentMessages, systemInstructions);
+    } catch (groqError) {
+      console.error("AI engines failed:", groqError);
+      if (groqError.message.includes("429")) {
         return "The gossip bar is full! Let me catch my breath for 10 seconds.";
       }
       return "Ops, my brain had a tiny blackout. Tell me again!";
